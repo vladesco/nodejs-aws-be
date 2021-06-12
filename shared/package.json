@@ -1,0 +1,23 @@
+{
+  "name": "@nodejs/aws-be",
+  "version": "1.0.0",
+  "description": "shared files between microservices",
+  "main": "index.ts",
+  "module": "index.ts",
+  "private": true,
+  "scripts": {
+    "test": ""
+  },
+  "dependencies": {
+    "@middy/core": "^1.5.2",
+    "@middy/http-json-body-parser": "^1.5.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "jest": "^27.0.4",
+    "ts-jest": "^27.0.3"
+  }
+}

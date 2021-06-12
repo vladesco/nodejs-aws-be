@@ -1,0 +1,28 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "init": "lerna clean --yes && lerna init --independent && lerna link && lerna bootstrap --hoist",
+    "test": "lerna run test"
+  },
+  "devDependencies": {
+    "@serverless/typescript": "^2.23.0",
+    "@types/aws-lambda": "^8.10.71",
+    "@types/node": "^14.14.25",
+    "json-schema-to-ts": "^1.5.0",
+    "lerna": "^4.0.0",
+    "serverless": "^2.23.0",
+    "serverless-webpack": "^5.3.5",
+    "ts-loader": "^8.0.15",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.9.0",
+    "tsconfig-paths-webpack-plugin": "^3.3.0",
+    "typescript": "^4.1.3",
+    "webpack": "^5.20.2",
+    "webpack-cli": "^4.7.2",
+    "webpack-node-externals": "^2.5.2"
+  },
+  "dependencies": {
+    "@nodejs/aws-be": "1.0.0"
+  }
+}
