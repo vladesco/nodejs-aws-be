@@ -1,0 +1,95 @@
+openapi: 3.0.0
+info:
+    version: 1.0.0
+    title: Product public api
+    description: Product api based on AWS and NodeJs
+    license:
+        name: MIT
+        url: http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT
+paths:
+    /products:
+        get:
+            description: Get product list
+            summary: Get product list
+            tags:
+                - product
+            operationId: ProductsGet
+            responses:
+                '200':
+                    description: Product list
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ProductList'
+                '404':
+                    description: '[Not Found]: products not found'
+
+    /products/{id}:
+        get:
+            description: Get product by id
+            summary: Get product by id
+            tags:
+                - product
+            operationId: ProductGetById
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  description: Product unique identifier in uuid format
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Product object
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Product'
+                '400':
+                    description: '[Bad Request]: product id is invalid'
+                '404':
+                    description: '[Not Found]: product with such id not found'
+
+servers:
+    - url: https://2ja06f56h1.execute-api.eu-west-1.amazonaws.com/dev/products
+components:
+    schemas:
+        ProductList:
+            title: Product list
+            type: array
+            items:
+                $ref: '#/components/schemas/Product'
+
+        Product:
+            title: Product
+            type: object
+            required:
+                - id
+                - title
+                - description
+                - price
+                - image
+            properties:
+                id:
+                    type: string
+                    description: Product id
+                    example: '54948f71-2616-494f-9a92-dcfb0bd98e8b'
+                title:
+                    type: string
+                    description: Product title
+                    example: Professional Git
+                description:
+                    type: string
+                    description: Product description
+                    example:
+                        Professional Git takes a professional approach to learning this
+                        massively popular software development tool,
+                        and provides an up-to-date guide for new users.
+                price:
+                    type: integer
+                    description: Product price
+                    example: 2500
+                image:
+                    type: string
+                    description: Product image url
+                    example: https://source.unsplash.com/random?sig=1

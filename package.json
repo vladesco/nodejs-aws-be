@@ -21,8 +21,5 @@
     "webpack": "^5.20.2",
     "webpack-cli": "^4.7.2",
     "webpack-node-externals": "^2.5.2"
-  },
-  "dependencies": {
-    "@nodejs/aws-be": "1.0.0"
   }
 }
