@@ -1,6 +1,6 @@
 import { LambdaConfig } from '@nodejs/aws-be/types';
 
-export const productListServiceConfig: LambdaConfig = {
+export const getProductListLambdaConfig: LambdaConfig = {
     events: [
         {
             http: {

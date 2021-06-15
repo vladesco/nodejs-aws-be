@@ -1,5 +1,5 @@
 import { HttpStatusCode } from '@nodejs/aws-be/types';
-import { createProductlistLambda } from '../../lambdas/get-product-list.ts';
+import { initGetProductlistLambda } from '../../lambdas/get-product-list.ts';
 import { ProductService } from '../../services';
 import { Product } from '../../types';
 
@@ -19,7 +19,7 @@ describe('product list lambda', () => {
         (ProductService as any).mockClear();
 
         productService = new ProductService(null);
-        productListLambda = createProductlistLambda(productService);
+        productListLambda = initGetProductlistLambda(productService);
         [mockProductService] = (ProductService as any).mock.instances;
     });
 
@@ -29,12 +29,13 @@ describe('product list lambda', () => {
                 id: 'test',
                 title: 'test',
                 description: 'test',
-                price: 0,
                 image: 'test',
+                price: 0,
+                count: 0,
             },
         ];
 
-        const testResponse = {
+        const testLambdaResponse = {
             statusCode: HttpStatusCode.OK,
             headers: corsHeaders,
             body: JSON.stringify(testProducts),
@@ -42,9 +43,9 @@ describe('product list lambda', () => {
 
         mockProductService.getProducts.mockResolvedValue(testProducts);
 
-        const productResponse = await productListLambda({}, null, null);
+        const lambdaResponse = await productListLambda({}, null, null);
 
-        expect(productResponse).toEqual(testResponse);
+        expect(lambdaResponse).toEqual(testLambdaResponse);
         expect(mockProductService.getProducts).toBeCalled();
     });
 
@@ -62,8 +63,8 @@ describe('product list lambda', () => {
 
         mockProductService.getProducts.mockRejectedValueOnce(new Error(errorMessage));
 
-        const productResponse = await productListLambda({}, null, null);
+        const lambdaResponse = await productListLambda({}, null, null);
 
-        expect(productResponse).toEqual(defaultErrorResponse);
+        expect(lambdaResponse).toEqual(defaultErrorResponse);
     });
 });

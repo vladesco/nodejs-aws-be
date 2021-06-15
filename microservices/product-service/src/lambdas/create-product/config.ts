@@ -1,11 +1,11 @@
 import { LambdaConfig } from '@nodejs/aws-be/types';
 
-export const getProductLambdaConfig: LambdaConfig = {
+export const createProductLambdaConfig: LambdaConfig = {
     events: [
         {
             http: {
-                method: 'get',
-                path: 'products/{id}',
+                method: 'post',
+                path: 'products',
                 cors: true,
             },
         },

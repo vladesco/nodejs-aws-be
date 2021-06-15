@@ -1,10 +1,10 @@
-import { NotFoundError, BadRequestError } from '@nodejs/aws-be/classes';
+import { NotFoundError, BadRequestError, ValidationError } from '@nodejs/aws-be/classes';
 import { Repository } from '@nodejs/aws-be/types';
-import { Product } from '../types';
-import { isUUDValid } from '../validation';
+import { Product, ProductDTO } from '../types';
+import { isUUDValid, productDTOValidtor } from '../validation';
 
 export class ProductService {
-    constructor(private productRepository: Repository<Product>) {}
+    constructor(private productRepository: Repository<ProductDTO, Product>) {}
 
     public async getProductById(productId: string): Promise<Product> {
         if (!isUUDValid(productId)) {
@@ -21,12 +21,22 @@ export class ProductService {
     }
 
     public async getProducts(): Promise<Product[]> {
-        const products = await this.productRepository.find();
+        const products = await this.productRepository.findAll();
 
         if (!products) {
             throw new NotFoundError('products not found');
         }
 
         return products;
+    }
+
+    public async createProduct(newProduct: ProductDTO): Promise<Product> {
+        const { error } = productDTOValidtor.validate(newProduct);
+
+        if (error) {
+            throw new ValidationError(error.message);
+        }
+
+        return this.productRepository.create(newProduct);
     }
 }

@@ -24,6 +24,29 @@ paths:
                 '404':
                     description: '[Not Found]: products not found'
 
+        post:
+            description: Create new product
+            summary: Create new product
+            tags:
+                - product
+            operationId: ProductCreate
+            requestBody:
+                description: Product to create
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ProductDTO'
+            responses:
+                '200':
+                    description: Created Product
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Product'
+                '400':
+                    description: '[Validation]: ${validation error message}'
+
     /products/{id}:
         get:
             description: Get product by id
@@ -60,20 +83,14 @@ components:
             items:
                 $ref: '#/components/schemas/Product'
 
-        Product:
-            title: Product
+        ProductDTO:
+            title: ProductDTO
             type: object
             required:
-                - id
                 - title
-                - description
                 - price
-                - image
+                - count
             properties:
-                id:
-                    type: string
-                    description: Product id
-                    example: '54948f71-2616-494f-9a92-dcfb0bd98e8b'
                 title:
                     type: string
                     description: Product title
@@ -93,3 +110,19 @@ components:
                     type: string
                     description: Product image url
                     example: https://source.unsplash.com/random?sig=1
+                count:
+                    type: integer
+                    description: number of products
+                    example: 10
+        Product:
+            title: Product
+            allOf:
+                - $ref: '#/components/schemas/ProductDTO'
+                - type: object
+                  required:
+                      - id
+                  properties:
+                      id:
+                          type: string
+                          description: Product unique identifier in UUID V4 format
+                          example: '2f2d4c71-1fb1-4973-88e7-512a8e8ed98f'
