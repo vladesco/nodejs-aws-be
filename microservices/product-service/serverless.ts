@@ -8,7 +8,7 @@ const serverlessConfiguration: AWS = {
         webpack: {
             webpackConfig: './webpack.config.js',
         },
-        dbVariables: '${file(./process-env.config.js)}',
+        dotenvVars: '${file(./process-env.config.js)}',
     },
     plugins: ['serverless-webpack'],
     provider: {
@@ -21,11 +21,28 @@ const serverlessConfiguration: AWS = {
         },
         environment: {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
-            PG_HOST: '${self:custom.dbVariables.PG_HOST}',
-            PG_PORT: '${self:custom.dbVariables.PG_PORT}',
-            PG_DATABASE: '${self:custom.dbVariables.PG_DATABASE}',
-            PG_USERNAME: '${self:custom.dbVariables.PG_USERNAME}',
-            PG_PASSWORD: '${self:custom.dbVariables.PG_PASSWORD}',
+            PG_HOST: '${self:custom.dotenvVars.PG_HOST}',
+            PG_PORT: '${self:custom.dotenvVars.PG_PORT}',
+            PG_DATABASE: '${self:custom.dotenvVars.PG_DATABASE}',
+            PG_USERNAME: '${self:custom.dotenvVars.PG_USERNAME}',
+            PG_PASSWORD: '${self:custom.dotenvVars.PG_PASSWORD}',
+            SNS_ARN: '${self:custom.dotenvVars.SNSARN}',
+        },
+        iam: {
+            role: {
+                statements: [
+                    {
+                        Effect: 'Allow',
+                        Action: 'sqs:*',
+                        Resource: '${self:custom.dotenvVars.SQSARN}',
+                    },
+                    {
+                        Effect: 'Allow',
+                        Action: 'sns:*',
+                        Resource: '${self:custom.dotenvVars.SNSARN}',
+                    },
+                ],
+            },
         },
         lambdaHashingVersion: '20201221',
     },

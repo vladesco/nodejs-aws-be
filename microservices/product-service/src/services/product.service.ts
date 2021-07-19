@@ -39,4 +39,28 @@ export class ProductService {
 
         return this.productRepository.create(newProduct);
     }
+
+    public async createListOfProducts(newProducts: ProductDTO[]): Promise<Product[]> {
+        const isOneOfProductsInvalid = newProducts.find(
+            (newProduct) => productDTOValidtor.validate(newProduct).error
+        );
+
+        if (isOneOfProductsInvalid) {
+            throw new ValidationError('one or more products are invalid');
+        }
+
+        const createdProducts: Product[] = [];
+
+        for (const newProduct of newProducts) {
+            try {
+                const createdProduct = await this.productRepository.create(newProduct);
+
+                createdProducts.push(createdProduct);
+            } catch (error) {
+                console.error(`something goes wrong ${error.message}`);
+            }
+        }
+
+        return createdProducts;
+    }
 }

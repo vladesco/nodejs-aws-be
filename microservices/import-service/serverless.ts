@@ -5,7 +5,7 @@ const serverlessConfiguration: AWS = {
     service: 'import-service',
     frameworkVersion: '2',
     custom: {
-        dotenvVars: '${file(../../process-env.config.js)}',
+        dotenvVars: '${file(./process-env.config.js)}',
         webpack: {
             webpackConfig: './webpack.config.js',
         },
@@ -27,6 +27,7 @@ const serverlessConfiguration: AWS = {
                 '${self:custom.dotenvVars.LINK_EXPIRED_TIME_IN_SEC}',
             UPLOAD_FILES_FOLDER: '${self:custom.dotenvVars.UPLOAD_FILES_FOLDER}',
             PARSED_FILES_FOLDER: '${self:custom.dotenvVars.PARSED_FILES_FOLDER}',
+            SQS_URL: '${self:custom.dotenvVars.SQSURL}',
         },
         iam: {
             role: {
@@ -35,6 +36,11 @@ const serverlessConfiguration: AWS = {
                         Effect: 'Allow',
                         Action: 's3:*',
                         Resource: 'arn:aws:s3:::${self:custom.dotenvVars.BUCKET}/*',
+                    },
+                    {
+                        Effect: 'Allow',
+                        Action: 'sqs:*',
+                        Resource: '${self:custom.dotenvVars.SQSARN}',
                     },
                 ],
             },

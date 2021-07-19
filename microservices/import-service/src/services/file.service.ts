@@ -8,14 +8,15 @@ import { isFilenameValid } from '../validation';
 export class FileService {
     constructor(private storageService: S3, private config: FileServiceConfig) {}
 
-    public async createUploadFileLink(filename: string, folder: string): Promise<string> {
-        const { bucketName, linkExpiredTimeInSec, fileExtension } = this.config;
+    public async createUploadFileLink(filename: string): Promise<string> {
+        const { bucketName, linkExpiredTimeInSec, fileExtension, uploadFilesFolder } =
+            this.config;
 
         if (!isFilenameValid(filename, fileExtension)) {
             throw new BadRequestError(`filename should have ${fileExtension} extension`);
         }
 
-        const fullFilename = `${folder}/${filename}`;
+        const fullFilename = `${uploadFilesFolder}/${filename}`;
 
         const uploadFileLink = await this.storageService.getSignedUrlPromise(
             'putObject',
@@ -30,18 +31,14 @@ export class FileService {
         return uploadFileLink;
     }
 
-    public async moveFileFromFirstFolderToSecond(
-        fileKey: string,
-        sourceFolder: string,
-        targetFolder: string
-    ): Promise<void> {
-        const { bucketName } = this.config;
+    public async moveFileToStashFolder(fileKey: string): Promise<void> {
+        const { bucketName, uploadFilesFolder, parsedFilesFolder } = this.config;
 
         await this.storageService
             .copyObject({
                 Bucket: bucketName,
                 CopySource: `${bucketName}/${fileKey}`,
-                Key: fileKey.replace(sourceFolder, targetFolder),
+                Key: fileKey.replace(uploadFilesFolder, parsedFilesFolder),
             })
             .promise();
 
@@ -50,16 +47,17 @@ export class FileService {
             .promise();
     }
 
-    public async logFileContent(fileKey: string): Promise<void> {
+    public async parseFileContent<T>(fileKey: string): Promise<T[]> {
         const { bucketName } = this.config;
         const file = this.storageService.getObject({ Bucket: bucketName, Key: fileKey });
+        const content: T[] = [];
 
-        const waitingPromise = new Promise<void>((resolve, reject) =>
+        const waitingPromise = new Promise<T[]>((resolve, reject) =>
             file
                 .createReadStream()
                 .pipe(csv())
-                .on('data', console.log)
-                .on('end', resolve)
+                .on('data', (row: T) => content.push(row))
+                .on('end', () => resolve(content))
                 .on('error', reject)
         );
 

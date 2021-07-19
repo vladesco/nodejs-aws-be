@@ -3,14 +3,13 @@ import { formatJSONResponse, middyfy } from '@nodejs/aws-be/utils';
 import { LambdaGateway } from '@nodejs/aws-be/types';
 import { ProductService } from '../../services';
 
-const lambaConstructor: (service: ProductService) => LambdaGateway<never, never> = (
-    service: ProductService
-) =>
-    async function getProductList() {
-        const products = await service.getProducts();
+const lambaConstructor: (productService: ProductService) => LambdaGateway<never, never> =
+    (productService: ProductService) =>
+        async function getProductList() {
+            const products = await productService.getProducts();
 
-        return formatJSONResponse(products);
-    };
+            return formatJSONResponse(products);
+        };
 
-export const initGetProductlistLambda = (service: ProductService) =>
-    middyfy(lambaConstructor(service));
+export const initGetProductlistLambda = (productService: ProductService) =>
+    middyfy(lambaConstructor(productService));

@@ -1,16 +1,12 @@
 import { Repository } from '@nodejs/aws-be/types';
-import { Client } from 'pg';
+import { Pool } from 'pg';
 import { Product, ProductDTO } from '../types';
 
 export class ProductRepository implements Repository<ProductDTO, Product> {
-    private connection: Promise<Client>;
-
-    constructor(client: Client) {
-        this.connection = client.connect().then(() => client);
-    }
+    constructor(private pool: Pool) {}
 
     public async create(newProduct: ProductDTO): Promise<Product> {
-        const client = await this.connection;
+        const client = await this.pool.connect();
 
         try {
             await client.query('BEGIN');
@@ -47,11 +43,14 @@ export class ProductRepository implements Repository<ProductDTO, Product> {
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
+        } finally {
+            client.release();
         }
     }
 
     public async update(id: string, newProduct: ProductDTO): Promise<Product> {
-        const client = await this.connection;
+        const client = await this.pool.connect();
+
         try {
             await client.query('BEGIN');
             const { title, description, image, price, count } = newProduct;
@@ -86,11 +85,14 @@ export class ProductRepository implements Repository<ProductDTO, Product> {
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
+        } finally {
+            client.release();
         }
     }
 
     public async delete(productId: string): Promise<Product> {
-        const client = await this.connection;
+        const client = await this.pool.connect();
+
         try {
             await client.query('BEGIN');
             const {
@@ -124,36 +126,48 @@ export class ProductRepository implements Repository<ProductDTO, Product> {
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
+        } finally {
+            client.release();
         }
     }
 
     public async findOne(productId: string): Promise<Product> {
-        const client = await this.connection;
-        const {
-            rows: [product],
-        } = await client.query<Product>({
-            text: `
+        const client = await this.pool.connect();
+
+        try {
+            const {
+                rows: [product],
+            } = await client.query<Product>({
+                text: `
                 SELECT p.id, p.title, p.description, p.image, p.price, s.count  
                 FROM Products p INNER JOIN Stocks s
                 ON p.id = s.product_id 
                 WHERE id = $1
                 `,
-            values: [productId],
-        });
+                values: [productId],
+            });
 
-        return product;
+            return product;
+        } finally {
+            client.release();
+        }
     }
 
     public async findAll(): Promise<Product[]> {
-        const client = await this.connection;
-        const { rows: products } = await client.query<Product>(
-            `
+        const client = await this.pool.connect();
+
+        try {
+            const { rows: products } = await client.query<Product>(
+                `
             SELECT p.id, p.title, p.description, p.image, p.price, s.count 
             FROM Products p INNER JOIN Stocks s
             ON p.id = s.product_id
             `
-        );
+            );
 
-        return products;
+            return products;
+        } finally {
+            client.release();
+        }
     }
 }
