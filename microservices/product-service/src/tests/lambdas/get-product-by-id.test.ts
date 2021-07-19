@@ -12,15 +12,13 @@ describe('product lambda', () => {
         'Access-Control-Allow-Credentials': true,
     };
 
-    let productService: ProductService;
     let mockProductService: jest.Mocked<ProductService>;
-    let productLambda: Function;
+    let getProductByIdLambda: Function;
 
     beforeEach(() => {
         (ProductService as any).mockClear();
 
-        productService = new ProductService(null);
-        productLambda = initGetProductLambda(productService);
+        getProductByIdLambda = initGetProductLambda(new ProductService(null));
         [mockProductService] = (ProductService as any).mock.instances;
     });
 
@@ -50,7 +48,7 @@ describe('product lambda', () => {
 
         mockProductService.getProductById.mockResolvedValue(testProduct);
 
-        const lambdaResponse = await productLambda(apiEvent, null, null);
+        const lambdaResponse = await getProductByIdLambda(apiEvent);
 
         expect(lambdaResponse).toEqual(testLambdaResponse);
         expect(mockProductService.getProductById).toBeCalledWith(testId);
@@ -76,7 +74,7 @@ describe('product lambda', () => {
 
         mockProductService.getProductById.mockRejectedValueOnce(new Error(errorMessage));
 
-        const lambdaResponse = await productLambda(apiEvent, null, null);
+        const lambdaResponse = await getProductByIdLambda(apiEvent);
 
         expect(lambdaResponse).toEqual(defaultErrorResponse);
     });

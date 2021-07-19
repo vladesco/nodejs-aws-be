@@ -8,7 +8,7 @@ const serverlessConfiguration: AWS = {
         webpack: {
             webpackConfig: './webpack.config.js',
         },
-        dbVariables: '${file(./config.js)}',
+        dbVariables: '${file(./process-env.config.js)}',
     },
     plugins: ['serverless-webpack'],
     provider: {

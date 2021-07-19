@@ -1,8 +1,16 @@
 import { AWS } from '@serverless/typescript';
-import { Handler, APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import {
+    Handler,
+    APIGatewayProxyEvent,
+    APIGatewayProxyResult,
+    S3Event,
+} from 'aws-lambda';
+import { HttpStatusCode } from './http.types';
 
-export type MicroserviceConfig = Pick<AWS, 'functions'>['functions'];
-export type LambdaConfig = MicroserviceConfig['function'];
+type Property<T, U extends keyof T> = T[U];
+
+export type MicroserviceConfig = Property<AWS, 'functions'>;
+export type LambdaConfig = Property<MicroserviceConfig, 'function'>;
 
 export type LambdaGateway<Body = never, Query = never, Path = never> = Handler<
     APIGatewayProxyEvent & {
@@ -12,3 +20,5 @@ export type LambdaGateway<Body = never, Query = never, Path = never> = Handler<
     },
     APIGatewayProxyResult
 >;
+
+export type LambdaS3 = Handler<S3Event, { statusCode: HttpStatusCode }>;

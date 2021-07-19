@@ -1,5 +1,5 @@
 import { HttpStatusCode } from '@nodejs/aws-be/types';
-import { initGetProductlistLambda } from '../../lambdas/get-product-list.ts';
+import { initGetProductlistLambda } from '../../lambdas/get-product-list';
 import { ProductService } from '../../services';
 import { Product } from '../../types';
 
@@ -11,15 +11,13 @@ describe('product list lambda', () => {
         'Access-Control-Allow-Credentials': true,
     };
 
-    let productService: ProductService;
     let mockProductService: jest.Mocked<ProductService>;
-    let productListLambda: Function;
+    let getProductListLambda: Function;
 
     beforeEach(() => {
         (ProductService as any).mockClear();
 
-        productService = new ProductService(null);
-        productListLambda = initGetProductlistLambda(productService);
+        getProductListLambda = initGetProductlistLambda(new ProductService(null));
         [mockProductService] = (ProductService as any).mock.instances;
     });
 
@@ -43,7 +41,7 @@ describe('product list lambda', () => {
 
         mockProductService.getProducts.mockResolvedValue(testProducts);
 
-        const lambdaResponse = await productListLambda({}, null, null);
+        const lambdaResponse = await getProductListLambda({});
 
         expect(lambdaResponse).toEqual(testLambdaResponse);
         expect(mockProductService.getProducts).toBeCalled();
@@ -63,7 +61,7 @@ describe('product list lambda', () => {
 
         mockProductService.getProducts.mockRejectedValueOnce(new Error(errorMessage));
 
-        const lambdaResponse = await productListLambda({}, null, null);
+        const lambdaResponse = await getProductListLambda({});
 
         expect(lambdaResponse).toEqual(defaultErrorResponse);
     });

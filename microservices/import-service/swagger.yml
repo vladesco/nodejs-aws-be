@@ -1,0 +1,32 @@
+openapi: 3.0.0
+info:
+    version: 1.0.0
+    title: File public api
+    description: File api based on AWS and NodeJs
+    license:
+        name: MIT
+        url: http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT
+paths:
+    /products:
+        get:
+            description: Get upload file link
+            summary: Get upload file link
+            tags:
+                - file
+            operationId: GetUploadFileLink
+            parameters:
+                - in: query
+                  name: filename
+                  schema:
+                      type: string
+                      pattern: '*\.csv$'
+                  required: true
+            responses:
+                '200':
+                    description: Upload file link
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                '400':
+                    description: '[Bad Request]: filename should have csv extension'

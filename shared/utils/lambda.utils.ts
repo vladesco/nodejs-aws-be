@@ -6,8 +6,10 @@ import { formatErrorResponse } from './apiGateway.utils';
 const errorMiddleware: middy.MiddlewareFunction<any, any> = (request, next) => {
     const error = request.error;
 
+    console.error(`error :${error.message}\nstack:${error.stack}`);
+
     request.response = isHttpError(error)
-        ? formatErrorResponse(error.getMessage(), error.getStatusCode())
+        ? formatErrorResponse(error.message, error.statusCode)
         : formatErrorResponse(error.message);
     next();
 };
