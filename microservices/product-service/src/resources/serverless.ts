@@ -6,7 +6,7 @@ const resourcesConfiguration: AWS = {
     provider: { name: 'aws', region: 'eu-west-1' },
     plugins: ['serverless-export-outputs'],
     custom: {
-        dotenvVars: '${file(../../config.js)}',
+        dotenvVars: '${file(../../process-env.config.js)}',
         exportOutputs: {
             include: ['ENDPOINT', 'PORT'],
             output: {

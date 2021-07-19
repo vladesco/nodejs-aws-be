@@ -12,15 +12,13 @@ describe('create product lambda', () => {
         'Access-Control-Allow-Credentials': true,
     };
 
-    let productService: ProductService;
     let mockProductService: jest.Mocked<ProductService>;
     let createProductLambda: Function;
 
     beforeEach(() => {
         (ProductService as any).mockClear();
 
-        productService = new ProductService(null);
-        createProductLambda = initCreateProductLambda(productService);
+        createProductLambda = initCreateProductLambda(new ProductService(null));
         [mockProductService] = (ProductService as any).mock.instances;
     });
 
@@ -53,7 +51,7 @@ describe('create product lambda', () => {
 
         mockProductService.createProduct.mockResolvedValue(createdTestProduct);
 
-        const lambdaResponse = await createProductLambda(apiEvent, null, null);
+        const lambdaResponse = await createProductLambda(apiEvent);
 
         expect(lambdaResponse).toEqual(testLambdaResponse);
         expect(mockProductService.createProduct).toBeCalledWith(testProductDTO);
@@ -62,16 +60,8 @@ describe('create product lambda', () => {
     it('should return correct response if error will occur', async () => {
         const errorMessage = 'test error message';
 
-        const testProductDTO: ProductDTO = {
-            title: 'test',
-            description: 'test',
-            image: 'test',
-            price: 0,
-            count: 0,
-        };
-
         const apiEvent: Partial<APIGatewayProxyEvent> = {
-            body: JSON.stringify(testProductDTO),
+            body: null,
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -86,9 +76,9 @@ describe('create product lambda', () => {
             },
         };
 
-        mockProductService.createProduct.mockRejectedValueOnce(new Error(errorMessage));
+        mockProductService.createProduct.mockRejectedValue(new Error(errorMessage));
 
-        const lambdaResponse = await createProductLambda(apiEvent, null, null);
+        const lambdaResponse = await createProductLambda(apiEvent);
 
         expect(lambdaResponse).toEqual(defaultErrorResponse);
     });

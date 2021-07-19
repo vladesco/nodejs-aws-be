@@ -63,10 +63,9 @@ export enum HttpStatusCode {
 }
 
 export interface HttpError {
-    getMessage(): string;
-    getStatusCode(): HttpStatusCode;
+    get message(): string;
+    get statusCode(): HttpStatusCode;
 }
 
 export const isHttpError = (httpError: any): httpError is HttpError =>
-    typeof httpError?.getMessage === 'function' &&
-    typeof httpError?.getStatusCode === 'function';
+    httpError?.message && httpError?.statusCode;

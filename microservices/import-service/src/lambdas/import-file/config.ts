@@ -1,16 +1,16 @@
 import { LambdaConfig } from '@nodejs/aws-be/types';
 
-export const getProductLambdaConfig: LambdaConfig = {
+export const uploadFileLambdaConfig: LambdaConfig = {
     events: [
         {
             http: {
                 method: 'get',
-                path: 'products/{id}',
+                path: 'import',
                 cors: true,
                 request: {
                     parameters: {
-                        paths: {
-                            id: true,
+                        querystrings: {
+                            filename: true,
                         },
                     },
                 },

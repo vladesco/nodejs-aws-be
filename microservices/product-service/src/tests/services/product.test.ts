@@ -7,14 +7,12 @@ jest.mock('../../repositories/product.repository');
 
 describe('product service', () => {
     let productService: ProductService;
-    let productRepository: ProductRepository;
     let mockProductRepository: jest.Mocked<ProductRepository>;
 
     beforeEach(() => {
         (ProductRepository as any).mockClear();
 
-        productRepository = new ProductRepository(null);
-        productService = new ProductService(productRepository);
+        productService = new ProductService(new ProductRepository(null));
         [mockProductRepository] = (ProductRepository as any).mock.instances;
     });
 

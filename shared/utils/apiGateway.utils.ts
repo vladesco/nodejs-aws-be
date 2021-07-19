@@ -16,6 +16,20 @@ export const formatJSONResponse = (
     };
 };
 
+export const formatTextResponse = (
+    text: string,
+    statusCode: number = HttpStatusCode.OK
+) => {
+    return {
+        statusCode: statusCode,
+        body: text,
+        headers: {
+            'Content-Type': 'text/plain',
+            ...corsHeaders,
+        },
+    };
+};
+
 export const formatErrorResponse = (
     errorMessage: string,
     statusCode: number = HttpStatusCode.INTERNAL_SERVER_ERROR

@@ -1,6 +1,6 @@
 import { Client } from 'pg';
 import { initGetProductLambda } from './lambdas/get-product-by-id';
-import { initGetProductlistLambda } from './lambdas/get-product-list.ts';
+import { initGetProductlistLambda } from './lambdas/get-product-list';
 import { ProductService } from './services';
 import { ProductRepository } from './repositories';
 import { initCreateProductLambda } from './lambdas/create-product';
