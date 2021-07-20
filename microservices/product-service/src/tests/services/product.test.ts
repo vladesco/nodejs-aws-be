@@ -1,7 +1,7 @@
 import { ProductService } from '../../services';
 import { ProductRepository } from '../../repositories';
-import { BadRequestError, NotFoundError } from '@nodejs/aws-be/classes';
-import { Product } from '../../types';
+import { BadRequestError, NotFoundError, ValidationError } from '@nodejs/aws-be/classes';
+import { Product, ProductDTO } from '../../types';
 
 jest.mock('../../repositories/product.repository');
 
@@ -13,7 +13,7 @@ describe('product service', () => {
     beforeEach(() => {
         (ProductRepository as any).mockClear();
 
-        productRepository = new ProductRepository();
+        productRepository = new ProductRepository(null);
         productService = new ProductService(productRepository);
         [mockProductRepository] = (ProductRepository as any).mock.instances;
     });
@@ -25,8 +25,9 @@ describe('product service', () => {
                 id: testProductId,
                 title: 'test',
                 description: 'test',
-                price: 0,
                 image: 'test',
+                price: 0,
+                count: 0,
             };
 
             mockProductRepository.findOne.mockResolvedValue(testProduct);
@@ -66,26 +67,59 @@ describe('product service', () => {
                     id: 'test id',
                     title: 'test',
                     description: 'test',
-                    price: 0,
                     image: 'test',
+                    price: 0,
+                    count: 0,
                 },
             ];
 
-            mockProductRepository.find.mockResolvedValue(testProducts);
+            mockProductRepository.findAll.mockResolvedValue(testProducts);
 
             const products = await productService.getProducts();
 
             expect(products).toEqual(testProducts);
-            expect(mockProductRepository.find).toBeCalled();
+            expect(mockProductRepository.findAll).toBeCalled();
         });
 
         it('should throw not fount error if there are no poducts', async () => {
-            mockProductRepository.find.mockResolvedValue(null);
+            mockProductRepository.findAll.mockResolvedValue(null);
 
             try {
                 await productService.getProducts();
             } catch (error) {
                 expect(error instanceof NotFoundError).toBeTruthy();
+            }
+        });
+    });
+
+    describe('createProduct method', () => {
+        it('should call create repository method and return created product', async () => {
+            const testProductDTO: ProductDTO = {
+                title: 'test',
+                description: 'test',
+                image: 'https://test.com',
+                price: 0,
+                count: 0,
+            };
+
+            const createdTestProduct: Product = {
+                id: 'test id',
+                ...testProductDTO,
+            };
+
+            mockProductRepository.create.mockResolvedValue(createdTestProduct);
+
+            const createdProduct = await productService.createProduct(testProductDTO);
+
+            expect(createdProduct).toEqual(createdTestProduct);
+            expect(mockProductRepository.create).toBeCalledWith(testProductDTO);
+        });
+
+        it('should throw validation error if prodcut dto is invalid', async () => {
+            try {
+                await productService.createProduct(null);
+            } catch (error) {
+                expect(error instanceof ValidationError).toBeTruthy();
             }
         });
     });

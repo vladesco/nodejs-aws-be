@@ -1,12 +1,12 @@
 import { HttpStatusCode } from '@nodejs/aws-be/types';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-import { initGetProductLambda } from '../../lambdas/get-product-by-id';
+import { initCreateProductLambda } from '../../lambdas/create-product';
 import { ProductService } from '../../services';
-import { Product } from '../../types';
+import { Product, ProductDTO } from '../../types';
 
 jest.mock('../../services/product.service');
 
-describe('product lambda', () => {
+describe('create product lambda', () => {
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
@@ -14,21 +14,55 @@ describe('product lambda', () => {
 
     let productService: ProductService;
     let mockProductService: jest.Mocked<ProductService>;
-    let productLambda: Function;
+    let createProductLambda: Function;
 
     beforeEach(() => {
         (ProductService as any).mockClear();
 
         productService = new ProductService(null);
-        productLambda = initGetProductLambda(productService);
+        createProductLambda = initCreateProductLambda(productService);
         [mockProductService] = (ProductService as any).mock.instances;
     });
 
-    it('should call product service with correct id and return correct response', async () => {
-        const testId = 'testId';
+    it('should call product service with correct productDTO and return correct response', async () => {
+        const testProductDTO: ProductDTO = {
+            title: 'test',
+            description: 'test',
+            image: 'test',
+            count: 0,
+            price: 0,
+        };
 
-        const testProduct: Product = {
-            id: 'test',
+        const createdTestProduct: Product = {
+            id: 'test id',
+            ...testProductDTO,
+        };
+
+        const testLambdaResponse = {
+            statusCode: HttpStatusCode.OK,
+            headers: corsHeaders,
+            body: JSON.stringify(createdTestProduct),
+        };
+
+        const apiEvent: Partial<APIGatewayProxyEvent> = {
+            body: JSON.stringify(testProductDTO),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+
+        mockProductService.createProduct.mockResolvedValue(createdTestProduct);
+
+        const lambdaResponse = await createProductLambda(apiEvent, null, null);
+
+        expect(lambdaResponse).toEqual(testLambdaResponse);
+        expect(mockProductService.createProduct).toBeCalledWith(testProductDTO);
+    });
+
+    it('should return correct response if error will occur', async () => {
+        const errorMessage = 'test error message';
+
+        const testProductDTO: ProductDTO = {
             title: 'test',
             description: 'test',
             image: 'test',
@@ -36,32 +70,10 @@ describe('product lambda', () => {
             count: 0,
         };
 
-        const testLambdaResponse = {
-            statusCode: HttpStatusCode.OK,
-            headers: corsHeaders,
-            body: JSON.stringify(testProduct),
-        };
-
         const apiEvent: Partial<APIGatewayProxyEvent> = {
-            pathParameters: {
-                id: testId,
-            },
-        };
-
-        mockProductService.getProductById.mockResolvedValue(testProduct);
-
-        const lambdaResponse = await productLambda(apiEvent, null, null);
-
-        expect(lambdaResponse).toEqual(testLambdaResponse);
-        expect(mockProductService.getProductById).toBeCalledWith(testId);
-    });
-
-    it('should return correct response if error will occur', async () => {
-        const errorMessage = 'test error message';
-
-        const apiEvent: Partial<APIGatewayProxyEvent> = {
-            pathParameters: {
-                id: null,
+            body: JSON.stringify(testProductDTO),
+            headers: {
+                'Content-Type': 'application/json',
             },
         };
 
@@ -74,9 +86,9 @@ describe('product lambda', () => {
             },
         };
 
-        mockProductService.getProductById.mockRejectedValueOnce(new Error(errorMessage));
+        mockProductService.createProduct.mockRejectedValueOnce(new Error(errorMessage));
 
-        const lambdaResponse = await productLambda(apiEvent, null, null);
+        const lambdaResponse = await createProductLambda(apiEvent, null, null);
 
         expect(lambdaResponse).toEqual(defaultErrorResponse);
     });

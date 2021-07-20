@@ -3,18 +3,23 @@ import middyJsonBodyParser from '@middy/http-json-body-parser';
 import { isHttpError } from '../types';
 import { formatErrorResponse } from './apiGateway.utils';
 
-const errroHandler: middy.MiddlewareFunction<any, any> = (request, next) => {
+const errorMiddleware: middy.MiddlewareFunction<any, any> = (request, next) => {
     const error = request.error;
 
-    if (isHttpError(error)) {
-        request.response = formatErrorResponse(error.getMessage(), error.getStatusCode());
-        next();
-    } else {
-        request.response = formatErrorResponse(error.message);
-        next();
-    }
+    request.response = isHttpError(error)
+        ? formatErrorResponse(error.getMessage(), error.getStatusCode())
+        : formatErrorResponse(error.message);
+    next();
 };
 
+const createLogMiddleware: (handlerName: string) => middy.MiddlewareFunction<any, any> =
+    (handlerName: string) => (event, next) => {
+        console.log(`${handlerName} called with event ${JSON.stringify(event)}\n`);
+        next();
+    };
+
 export const middyfy = (handler) => {
-    return middy(handler).use(middyJsonBodyParser()).use({ onError: errroHandler });
+    return middy(handler)
+        .use(middyJsonBodyParser())
+        .use({ onError: errorMiddleware, before: createLogMiddleware(handler.name) });
 };

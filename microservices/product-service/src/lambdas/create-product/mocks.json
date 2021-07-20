@@ -1,0 +1,10 @@
+{
+    "headers": {},
+    "body": {
+        "title": "test title",
+        "description": "test description",
+        "image": "https://test.mage.com",
+        "price": 0,
+        "count": 0
+    }
+}

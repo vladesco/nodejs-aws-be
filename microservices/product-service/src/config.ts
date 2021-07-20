@@ -1,15 +1,20 @@
 import { MicroserviceConfig } from '@nodejs/aws-be/types';
 import { addPathToLambdaConfig } from '@nodejs/aws-be/utils';
-import { productServiceConfig } from './lambdas/get-product-by-id';
-import { productListServiceConfig } from './lambdas/get-product-list.ts';
+import { createProductLambdaConfig } from './lambdas/create-product';
+import { getProductLambdaConfig } from './lambdas/get-product-by-id';
+import { getProductListLambdaConfig } from './lambdas/get-product-list.ts';
 
 export const microseviceConfig: MicroserviceConfig = {
-    productLambda: addPathToLambdaConfig(
-        productServiceConfig,
-        `${__dirname}/microservice.productLambda`
+    getProductLambda: addPathToLambdaConfig(
+        getProductLambdaConfig,
+        `${__dirname}/microservice.getPoductLambda`
     ),
-    productListLambda: addPathToLambdaConfig(
-        productListServiceConfig,
-        `${__dirname}/microservice.productListLambda`
+    getProductListLambda: addPathToLambdaConfig(
+        getProductListLambdaConfig,
+        `${__dirname}/microservice.getProductListLambda`
+    ),
+    createProductLambda: addPathToLambdaConfig(
+        createProductLambdaConfig,
+        `${__dirname}/microservice.createProductLambda`
     ),
 };
