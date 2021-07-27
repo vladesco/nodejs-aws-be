@@ -16,6 +16,8 @@ describe('file service', () => {
     const fileServiceConfig: FileServiceConfig = {
         bucketName: 'test bucket name',
         fileExtension: 'test',
+        uploadFilesFolder: 'test upload files folder',
+        parsedFilesFolder: 'test parsed files folder',
         linkExpiredTimeInSec: 0,
     };
 
@@ -45,28 +47,29 @@ describe('file service', () => {
 
     describe('createUploadFileLink method', () => {
         it('should call s3 getSignedUrlPromise method with correct params', async () => {
-            const testFilename = `test.${fileServiceConfig.fileExtension}`;
-            const testFileFolder = 'test';
+            const { fileExtension, bucketName, linkExpiredTimeInSec, uploadFilesFolder } =
+                fileServiceConfig;
+            const testFilename = `test.${fileExtension}`;
 
-            await fileSevice.createUploadFileLink(testFilename, testFileFolder);
+            await fileSevice.createUploadFileLink(testFilename);
 
             const [action, linkParams] = getSignedUrlPromiseSpy.mock.calls[0];
 
             expect(action).toBe('putObject');
             expect(linkParams).toEqual({
-                Bucket: fileServiceConfig.bucketName,
-                Expires: fileServiceConfig.linkExpiredTimeInSec,
-                ContentType: `text/${fileServiceConfig.fileExtension}`,
-                Key: `${testFileFolder}/${testFilename}`,
+                Bucket: bucketName,
+                Expires: linkExpiredTimeInSec,
+                ContentType: `text/${fileExtension}`,
+                Key: `${uploadFilesFolder}/${testFilename}`,
             });
         });
 
         it('should throw an error if filename is incorrect', async () => {
-            const testFilename = `test.not-${fileServiceConfig.fileExtension}`;
-            const testFileFolder = 'test';
+            const { fileExtension } = fileServiceConfig;
+            const testFilename = `test.not-${fileExtension}`;
 
             try {
-                await fileSevice.createUploadFileLink(testFilename, testFileFolder);
+                await fileSevice.createUploadFileLink(testFilename);
             } catch (error) {
                 expect(error instanceof BadRequestError).toBeTruthy();
             }
@@ -75,26 +78,21 @@ describe('file service', () => {
 
     describe('moveFileFromFirstFolderToSecond method', () => {
         it('should call S3 copyObject and deleteObject with correct params and in correct way', async () => {
-            const bucketName = fileServiceConfig.bucketName;
-            const testFirstFolder = 'test first folder';
-            const testSecondFolder = 'test second folder';
+            const { bucketName, uploadFilesFolder, parsedFilesFolder } =
+                fileServiceConfig;
             const testFileKey = 'test file key';
 
-            await fileSevice.moveFileFromFirstFolderToSecond(
-                `${testFirstFolder}/${testFileKey}`,
-                testFirstFolder,
-                testSecondFolder
-            );
+            await fileSevice.moveFileToStashFolder(`${uploadFilesFolder}/${testFileKey}`);
 
             expect(copyObjectSpy).toHaveBeenCalledWith({
                 Bucket: bucketName,
-                CopySource: `${bucketName}/${testFirstFolder}/${testFileKey}`,
-                Key: `${testSecondFolder}/${testFileKey}`,
+                CopySource: `${bucketName}/${uploadFilesFolder}/${testFileKey}`,
+                Key: `${parsedFilesFolder}/${testFileKey}`,
             });
 
             expect(deleteObjectSpy).toHaveBeenCalledWith({
                 Bucket: bucketName,
-                Key: `${testFirstFolder}/${testFileKey}`,
+                Key: `${uploadFilesFolder}/${testFileKey}`,
             });
 
             const [copyObjectMethodCallOrder] = copyObjectSpy.mock.invocationCallOrder;
@@ -111,7 +109,7 @@ describe('file service', () => {
             const testFileContent = 'test file content';
 
             getObjectSpy.mockReturnValue({ Body: testFileContent });
-            await fileSevice.logFileContent(testFileKey);
+            await fileSevice.parseFileContent(testFileKey);
 
             const [fileParams] = getObjectSpy.mock.calls[0];
 

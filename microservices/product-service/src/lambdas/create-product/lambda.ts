@@ -5,14 +5,14 @@ import { ProductService } from '../../services';
 import { ProductDTO } from '../../types';
 
 const lambaConstructor: (
-    service: ProductService
-) => LambdaGateway<ProductDTO, never, never> = (service: ProductService) =>
+    productService: ProductService
+) => LambdaGateway<ProductDTO, never, never> = (productService: ProductService) =>
     async function createProductLambda(event) {
         const productDTO = event.body;
-        const product = await service.createProduct(productDTO);
+        const product = await productService.createProduct(productDTO);
 
         return formatJSONResponse(product);
     };
 
-export const initCreateProductLambda = (service: ProductService) =>
-    middyfy(lambaConstructor(service));
+export const initCreateProductLambda = (productService: ProductService) =>
+    middyfy(lambaConstructor(productService));

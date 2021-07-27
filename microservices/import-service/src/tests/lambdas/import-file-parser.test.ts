@@ -1,10 +1,10 @@
 import { HttpStatusCode, RecursivePartial } from '@nodejs/aws-be/types';
 import { S3Event } from 'aws-lambda';
 import { initParseFileLambda } from '../../lambdas/import-file-parser';
-import { FileService } from '../../services';
-import { FileServiceConfig } from '../../types';
+import { FileService, MessageService } from '../../services';
 
 jest.mock('../../services/file.service');
+jest.mock('../../services/message.service');
 
 describe('parse file lambda', () => {
     const corsHeaders = {
@@ -12,33 +12,50 @@ describe('parse file lambda', () => {
         'Access-Control-Allow-Credentials': true,
     };
 
-    const testConfig: FileServiceConfig = {
-        bucketName: 'test bucket name',
-        fileExtension: 'test extension',
-        linkExpiredTimeInSec: 0,
-    };
-
-    const testUploadFilesFolder = 'test upload files folder';
-    const testParsedFilesFolder = 'test parsed files folder';
-
     let mockFileService: jest.Mocked<FileService>;
+    let mockMessageService: jest.Mocked<MessageService>;
     let parseFileLambda: Function;
 
     beforeEach(() => {
         (FileService as any).mockClear();
+        (MessageService as any).mockClear();
 
         parseFileLambda = initParseFileLambda(
-            new FileService(null, testConfig),
-            testUploadFilesFolder,
-            testParsedFilesFolder
+            new FileService(null, null),
+            new MessageService(null, null)
         );
 
         [mockFileService] = (FileService as any).mock.instances;
+        [mockMessageService] = (MessageService as any).mock.instances;
     });
 
-    it('should call file service with correct filename and return correct response', async () => {
-        const testFileKey = 'test file key';
+    it('should return correct response if error doesn`t occur', async () => {
+        const apiEvent: RecursivePartial<S3Event> = {
+            Records: [
+                {
+                    s3: {
+                        object: {
+                            key: null,
+                        },
+                    },
+                },
+            ],
+        };
 
+        const testLambdaResponse = {
+            statusCode: HttpStatusCode.OK,
+        };
+
+        mockFileService.parseFileContent.mockResolvedValue([]);
+
+        const lambdaResponse = await parseFileLambda(apiEvent);
+
+        expect(lambdaResponse).toEqual(testLambdaResponse);
+    });
+
+    it('should call file service to parse file and call message service to publish file content', async () => {
+        const testFileKey = 'test file key';
+        const testFileContent = {};
         const apiEvent: RecursivePartial<S3Event> = {
             Records: [
                 {
@@ -51,19 +68,12 @@ describe('parse file lambda', () => {
             ],
         };
 
-        const testLambdaResponse = {
-            statusCode: HttpStatusCode.OK,
-        };
+        mockFileService.parseFileContent.mockResolvedValue([testFileContent]);
+        await parseFileLambda(apiEvent);
 
-        const lambdaResponse = await parseFileLambda(apiEvent);
-
-        expect(lambdaResponse).toEqual(testLambdaResponse);
-        expect(mockFileService.logFileContent).toBeCalledWith(testFileKey);
-        expect(mockFileService.moveFileFromFirstFolderToSecond).toBeCalledWith(
-            testFileKey,
-            testUploadFilesFolder,
-            testParsedFilesFolder
-        );
+        expect(mockFileService.parseFileContent).toHaveBeenCalledWith(testFileKey);
+        expect(mockMessageService.publish).toHaveBeenCalledWith(testFileContent);
+        expect(mockFileService.moveFileToStashFolder).toHaveBeenCalledWith(testFileKey);
     });
 
     it('should return correct response if error will occur', async () => {
@@ -89,7 +99,7 @@ describe('parse file lambda', () => {
             },
         };
 
-        mockFileService.logFileContent.mockRejectedValue(new Error(errorMessage));
+        mockFileService.parseFileContent.mockRejectedValue(new Error(errorMessage));
 
         const lambdaResponse = await parseFileLambda(apiEvent);
 

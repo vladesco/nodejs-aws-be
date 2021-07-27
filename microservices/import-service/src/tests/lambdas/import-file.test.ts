@@ -2,7 +2,6 @@ import { HttpStatusCode } from '@nodejs/aws-be/types';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { initUploadFileLambda } from '../../lambdas/import-file';
 import { FileService } from '../../services';
-import { FileServiceConfig } from '../../types';
 
 jest.mock('../../services/file.service');
 
@@ -12,25 +11,13 @@ describe('import file lambda', () => {
         'Access-Control-Allow-Credentials': true,
     };
 
-    const testConfig: FileServiceConfig = {
-        bucketName: 'test bucket name',
-        fileExtension: 'test extension',
-        linkExpiredTimeInSec: 0,
-    };
-
-    const testUploadFilesFolder = 'test upload files folder';
-
     let mockFileService: jest.Mocked<FileService>;
     let uploadFileLambda: Function;
 
     beforeEach(() => {
         (FileService as any).mockClear();
 
-        uploadFileLambda = initUploadFileLambda(
-            new FileService(null, testConfig),
-            testUploadFilesFolder
-        );
-
+        uploadFileLambda = initUploadFileLambda(new FileService(null, null));
         [mockFileService] = (FileService as any).mock.instances;
     });
 
@@ -55,10 +42,7 @@ describe('import file lambda', () => {
         const lambdaResponse = await uploadFileLambda(apiEvent);
 
         expect(lambdaResponse).toEqual(testLambdaResponse);
-        expect(mockFileService.createUploadFileLink).toBeCalledWith(
-            testFilename,
-            testUploadFilesFolder
-        );
+        expect(mockFileService.createUploadFileLink).toBeCalledWith(testFilename);
     });
 
     it('should return correct response if error will occur', async () => {
