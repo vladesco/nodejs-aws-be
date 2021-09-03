@@ -1,6 +1,6 @@
 import { ProductService } from '../../services';
 import { ProductRepository } from '../../repositories';
-import { BadRequestError, NotFoundError, ValidationError } from '@nodejs/aws-be/classes';
+import { BadRequestError, NotFoundError, BadRequestError } from '@nodejs/aws-be/classes';
 import { Product, ProductDTO } from '../../types';
 
 jest.mock('../../repositories/product.repository');
@@ -117,7 +117,7 @@ describe('product service', () => {
             try {
                 await productService.createProduct(null);
             } catch (error) {
-                expect(error instanceof ValidationError).toBeTruthy();
+                expect(error instanceof BadRequestError).toBeTruthy();
             }
         });
     });

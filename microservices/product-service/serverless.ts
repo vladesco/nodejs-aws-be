@@ -1,5 +1,5 @@
 import { AWS } from '@serverless/typescript';
-import { microseviceConfig } from './src/config';
+import { microserviceConfig } from './src/config';
 
 const serverlessConfiguration: AWS = {
     service: 'product-service',
@@ -46,7 +46,7 @@ const serverlessConfiguration: AWS = {
         },
         lambdaHashingVersion: '20201221',
     },
-    functions: microseviceConfig,
+    functions: microserviceConfig,
 };
 
 module.exports = serverlessConfiguration;

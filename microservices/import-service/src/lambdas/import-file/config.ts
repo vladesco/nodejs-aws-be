@@ -14,6 +14,12 @@ export const uploadFileLambdaConfig: LambdaConfig = {
                         },
                     },
                 },
+                authorizer: {
+                    arn: '${self:custom.dotenvVars.AuthorizerURL}',
+                    resultTtlInSeconds: 0,
+                    identitySource: 'method.request.header.authorization',
+                    type: 'token',
+                },
             },
         },
     ],
