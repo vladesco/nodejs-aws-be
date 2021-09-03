@@ -5,6 +5,9 @@ import {
     APIGatewayProxyResult,
     S3Event,
     SQSEvent,
+    APIGatewayRequestAuthorizerEvent,
+    APIGatewayTokenAuthorizerEvent,
+    APIGatewayAuthorizerResult,
 } from 'aws-lambda';
 import { HttpStatusCode } from './http.types';
 
@@ -24,3 +27,9 @@ export type LambdaGateway<Body = never, Query = never, Path = never> = Handler<
 
 export type LambdaS3 = Handler<S3Event, { statusCode: HttpStatusCode }>;
 export type LambdaSQS = Handler<SQSEvent, { statusCode: HttpStatusCode }>;
+export type LambdaAuthorizer<T extends 'REQUEST' | 'TOKEN'> = Handler<
+    T extends 'REQUEST'
+        ? APIGatewayRequestAuthorizerEvent
+        : APIGatewayTokenAuthorizerEvent,
+    APIGatewayAuthorizerResult
+>;

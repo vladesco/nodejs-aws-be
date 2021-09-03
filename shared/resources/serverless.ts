@@ -1,12 +1,18 @@
 import { AWS } from '@serverless/typescript';
+import { addPathToLambdaConfig } from '../utils';
+import { basicAuthorizerLambdaConfig } from './authorizer';
 
 const resourcesConfiguration: AWS = {
-    service: 'item-notifications',
+    service: 'resources',
     frameworkVersion: '2',
     provider: { name: 'aws', region: 'eu-west-1' },
-    plugins: ['serverless-export-outputs'],
+    plugins: [
+        'serverless-webpack',
+        'serverless-export-outputs',
+        'serverless-plugin-split-stacks',
+    ],
     custom: {
-        dotenvVars: '${file(./process-env.config.js)}',
+        dotenvVars: '${file(./index.js)}',
         exportOutputs: {
             include: [
                 'SQSARN',
@@ -14,11 +20,17 @@ const resourcesConfiguration: AWS = {
                 'DeadLetterSQSARN',
                 'DeadLetterSQSURL',
                 'SNSTopicARN',
+                'AuthorizerURL',
             ],
             output: {
                 file: './.env',
                 format: 'toml',
             },
+        },
+        splitStacks: {
+            perFunction: true,
+            perType: false,
+            perGroupFunction: false,
         },
     },
     resources: {
@@ -93,7 +105,17 @@ const resourcesConfiguration: AWS = {
                 Description: 'ARN of new SNS Products Topic',
                 Value: { Ref: 'productTopic' },
             },
+            AuthorizerURL: {
+                Description: 'URL of new Authorizer',
+                Value: { 'Fn::GetAtt': ['BasicAuthorizerLambdaFunction', 'Arn'] },
+            },
         },
+    },
+    functions: {
+        BasicAuthorizer: addPathToLambdaConfig(
+            basicAuthorizerLambdaConfig,
+            `${__dirname}/resources.basicAuthorizerLambda`
+        ),
     },
 };
 

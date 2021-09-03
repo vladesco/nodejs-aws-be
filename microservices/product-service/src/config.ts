@@ -5,7 +5,7 @@ import { getProductLambdaConfig } from './lambdas/get-product-by-id';
 import { getProductListLambdaConfig } from './lambdas/get-product-list';
 import { catalogBatchProcessLambdaConfig } from './lambdas/catalog-batch-process';
 
-export const microseviceConfig: MicroserviceConfig = {
+export const microserviceConfig: MicroserviceConfig = {
     getProductLambda: addPathToLambdaConfig(
         getProductLambdaConfig,
         `${__dirname}/microservice.getPoductLambda`

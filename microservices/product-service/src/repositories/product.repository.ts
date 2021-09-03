@@ -44,7 +44,7 @@ export class ProductRepository implements Repository<ProductDTO, Product> {
             await client.query('ROLLBACK');
             throw error;
         } finally {
-            client.release();
+            client.release(true);
         }
     }
 
@@ -86,7 +86,7 @@ export class ProductRepository implements Repository<ProductDTO, Product> {
             await client.query('ROLLBACK');
             throw error;
         } finally {
-            client.release();
+            client.release(true);
         }
     }
 
@@ -127,7 +127,7 @@ export class ProductRepository implements Repository<ProductDTO, Product> {
             await client.query('ROLLBACK');
             throw error;
         } finally {
-            client.release();
+            client.release(true);
         }
     }
 
@@ -149,7 +149,7 @@ export class ProductRepository implements Repository<ProductDTO, Product> {
 
             return product;
         } finally {
-            client.release();
+            client.release(true);
         }
     }
 
@@ -167,7 +167,7 @@ export class ProductRepository implements Repository<ProductDTO, Product> {
 
             return products;
         } finally {
-            client.release();
+            client.release(true);
         }
     }
 }

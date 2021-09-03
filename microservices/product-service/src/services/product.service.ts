@@ -1,4 +1,4 @@
-import { NotFoundError, BadRequestError, ValidationError } from '@nodejs/aws-be/classes';
+import { NotFoundError, BadRequestError, BadRequestError } from '@nodejs/aws-be/classes';
 import { Repository } from '@nodejs/aws-be/types';
 import { Product, ProductDTO } from '../types';
 import { isUUDValid, productDTOValidtor } from '../validation';
@@ -34,7 +34,7 @@ export class ProductService {
         const { error } = productDTOValidtor.validate(newProduct);
 
         if (error) {
-            throw new ValidationError(error.message);
+            throw new BadRequestError(error.message);
         }
 
         return this.productRepository.create(newProduct);
@@ -46,7 +46,7 @@ export class ProductService {
         );
 
         if (isOneOfProductsInvalid) {
-            throw new ValidationError('one or more products are invalid');
+            throw new BadRequestError('one or more products are invalid');
         }
 
         const createdProducts: Product[] = [];

@@ -19,8 +19,6 @@ const pgPool = new Pool({
     host: process.env.PG_HOST,
     database: process.env.PG_DATABASE,
     port: Number(process.env.PG_PORT),
-    max: 10,
-    min: 0,
 });
 
 const productRepository = new ProductRepository(pgPool);
